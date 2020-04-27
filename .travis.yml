@@ -1,0 +1,24 @@
+sudo: required
+services: 
+  - docker
+
+before_install:
+  - docker build -t mango37/react-test -f ./client/Dockerfile.dev ./client
+
+script: 
+  - docker run mango37/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t mango37/multi-client ./client
+  - docker build -t mango37/multi-nginx ./nginx
+  - docker build -t mango37/multi-server ./server
+  - docker build -t mango37/multi-worker ./worker
+  # Login to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # 
+  - docker push mango37/multi-client
+  - docker push mango37/multi-nginx
+  - docker push mango37/multi-server
+  - docker push mango37/multi-worker
+
+  
